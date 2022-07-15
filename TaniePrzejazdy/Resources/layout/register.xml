@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                                                     android:id="@+id/rootView"
+                                                     android:layout_width="match_parent"
+                                                     android:layout_height="match_parent">
+
+	<LinearLayout
+		android:orientation="vertical"
+		android:layout_height="match_parent"
+		android:layout_width="match_parent">
+
+		<RelativeLayout
+		android:layout_width="match_parent"
+		android:layout_height="0dp"
+		android:layout_weight="0.4"
+		android:background="@color/tpPrimary"
+		>
+		
+		<Refractored.Controls.CircleImageView
+		android:id="@+id/circleImageView1"
+			android:layout_height="140dp"
+			android:layout_width="120dp"
+			android:layout_centerInParent="true"
+			android:src="@drawable/centerimage"
+			android:scaleType="centerCrop"
+		/>
+
+		<TextView
+			android:layout_height="wrap_content"
+			android:layout_width="match_parent"
+			android:gravity="center"
+			android:textSize="20sp"
+			android:text="Tanie Przejazdy"
+			android:layout_alignParentBottom="true"
+			android:layout_below="@+id/circleImageView1"
+			android:textColor="@color/tpWhite"
+		/>
+
+		</RelativeLayout>
+
+	<LinearLayout
+		android:orientation="vertical"
+		android:layout_height="0dp"
+		android:layout_width="match_parent"
+		android:layout_weight="0.6"
+		android:padding="10dp"
+		>
+
+		<com.google.android.material.textfield.TextInputLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:id="@+id/fullNameText"
+			>
+			<EditText
+			android:layout_height="wrap_content"
+				android:layout_width="match_parent"
+				android:hint="Full name"
+				android:inputType="textPersonName"
+				
+			/>
+			</com.google.android.material.textfield.TextInputLayout>
+
+		<com.google.android.material.textfield.TextInputLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:id="@+id/phoneText"
+			>
+			<EditText
+			android:layout_height="wrap_content"
+				android:layout_width="match_parent"
+				android:hint="Phone"
+				android:inputType="phone"
+			/>
+			</com.google.android.material.textfield.TextInputLayout>
+
+
+		<com.google.android.material.textfield.TextInputLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:id="@+id/emailText"
+			>
+			<EditText
+			android:layout_height="wrap_content"
+				android:layout_width="match_parent"
+				android:hint="Email"
+				android:inputType="textEmailAddress"
+				
+			/>
+			</com.google.android.material.textfield.TextInputLayout>
+
+
+
+		<com.google.android.material.textfield.TextInputLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:id="@+id/passwordText"
+			>
+			<EditText
+			android:layout_height="wrap_content"
+				android:layout_width="match_parent"
+				android:hint="Password"
+				android:inputType="textPassword"
+				
+			/>
+			</com.google.android.material.textfield.TextInputLayout>
+
+		<RelativeLayout
+			android:layout_width="match_parent"
+			android:layout_height="match_parent">
+
+			<Button
+				android:id="@+id/registerButton"
+				android:layout_height="45dp"
+				android:layout_width="300dp"
+				android:text="register"
+				android:textColor="@color/tpWhite"
+				android:background="@drawable/tproundbutton"
+				android:layout_centerInParent="true"
+			/>
+
+			<TextView
+					android:id="@+id/clickToLogin"
+				android:layout_height="wrap_content"
+				android:layout_width="match_parent"
+				android:gravity="center"
+				android:layout_marginTop="10dp"
+				android:layout_below="@+id/registerButton"
+				android:text="@string/Register"
+			/>
+
+			</RelativeLayout>
+
+		</LinearLayout>
+
+		</LinearLayout>
+
+	
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

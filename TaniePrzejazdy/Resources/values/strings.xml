@@ -2,4 +2,5 @@
     <string name="app_name">Tanie Przejazdy</string>
     <string name="action_settings">Settings</string>
 	<string name="click_here">Not registered? Click to Register</string>
+	<string name="Register">Register</string>
 </resources>
