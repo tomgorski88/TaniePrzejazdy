@@ -11,6 +11,7 @@ using Firebase;
 using Google.Android.Material.Snackbar;
 using Google.Android.Material.TextField;
 using Java.Lang;
+using Java.Util;
 using TaniePrzejazdy.EventListeners;
 
 namespace TaniePrzejazdy.Activities
@@ -24,6 +25,7 @@ namespace TaniePrzejazdy.Activities
         private TextInputLayout passwordText;
         private Button registerButton;
         private CoordinatorLayout rootView;
+        private string fullname, phone, email, password;
 
         private FirebaseAuth mAuth;
         private FirebaseDatabase database;
@@ -53,10 +55,10 @@ namespace TaniePrzejazdy.Activities
 
         private void RegisterButton_Click(object sender, System.EventArgs e)
         {
-            var fullname = fullNameText.EditText.Text;
-            var phone = phoneText.EditText.Text;
-            var email = emailText.EditText.Text;
-            var password = passwordText.EditText.Text;
+            fullname = fullNameText.EditText.Text;
+            phone = phoneText.EditText.Text;
+            email = emailText.EditText.Text;
+            password = passwordText.EditText.Text;
 
             if (fullname.Length < 3)
             {
@@ -96,6 +98,13 @@ namespace TaniePrzejazdy.Activities
         public void TaskCompletionListener_Success(object sender, EventArgs e)
         {
             Snackbar.Make(rootView, "User registration was successful", Snackbar.LengthShort).Show();
+            var userMap = new HashMap();
+            userMap.Put("email", email);
+            userMap.Put("phone", phone);
+            userMap.Put("fullname", fullname);
+
+            var userReference = database.GetReference("users/" + mAuth.CurrentUser.Uid);
+            userReference.SetValue(userMap);
         }
 
         void InitializeFirebase()
