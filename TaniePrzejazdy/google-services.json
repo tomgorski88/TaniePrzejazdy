@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "545622453417",
+    "firebase_url": "https://tanieprzejazdy-bfab4-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "tanieprzejazdy-bfab4",
+    "storage_bucket": "tanieprzejazdy-bfab4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:545622453417:android:ff9a315cb1fb18d9558db8",
+        "android_client_info": {
+          "package_name": "com.companyname.tanieprzejazdy"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "545622453417-f5785rp20s0i6vr559bde8dv07132lch.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAJ3bPs6A49I0g9AcRzx22J-xzGi-PVntM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "545622453417-f5785rp20s0i6vr559bde8dv07132lch.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

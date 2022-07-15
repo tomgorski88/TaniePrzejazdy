@@ -9,7 +9,7 @@ using Firebase.Database;
 
 namespace TaniePrzejazdy
 {
-    [Activity(Label = "@string/app_name", Theme = "@style/AppTheme", MainLauncher = true)]
+    [Activity(Label = "@string/app_name", Theme = "@style/AppTheme")]
     public class MainActivity : AppCompatActivity
     {
         private FirebaseDatabase database;
