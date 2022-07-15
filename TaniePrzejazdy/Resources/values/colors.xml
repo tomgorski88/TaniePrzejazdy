@@ -4,4 +4,10 @@
     <color name="colorPrimaryDark">#1B3147</color>
     <color name="colorAccent">#3498db</color>
 	<color name="splashBackground">#fff</color>
+
+	<color name="tpPrimary">#1C4258</color>
+	<color name="tpPrimaryDark">#102A38</color>
+	<color name="tpAccentColor">#EE861F</color>
+	<color name="tpWhite">#fff</color>
+	<color name="tpAccentClick">#A25508</color>
 </resources>

@@ -12,4 +12,9 @@
 		<item name="android:windowNoTitle">true</item>
 		<item name="android:windowFullscreen">true</item>
 	</style>
+    <style name="tpTheme" parent="Theme.AppCompat.Light.NoActionBar">
+		<item name="colorPrimary">@color/tpPrimary</item>
+        <item name="colorPrimaryDark">@color/tpPrimaryDark</item>
+        <item name="colorAccent">@color/tpAccentColor</item>
+    </style>
 </resources>
