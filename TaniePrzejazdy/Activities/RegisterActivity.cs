@@ -1,5 +1,6 @@
 ﻿using System;
 using Android.App;
+using Android.Content;
 using Android.Gms.Tasks;
 using Android.OS;
 using Android.Widget;
@@ -25,11 +26,15 @@ namespace TaniePrzejazdy.Activities
         private TextInputLayout passwordText;
         private Button registerButton;
         private CoordinatorLayout rootView;
+        private TextView loginText;
+
         private string fullname, phone, email, password;
 
         private FirebaseAuth mAuth;
         private FirebaseDatabase database;
         private readonly TaskCompletionListener taskCompletionListener = new TaskCompletionListener();
+        ISharedPreferences preferences = Application.Context.GetSharedPreferences("userInfo", FileCreationMode.Private);
+        private ISharedPreferencesEditor editor;
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -43,14 +48,22 @@ namespace TaniePrzejazdy.Activities
 
         void ConnectControls()
         {
-            fullNameText = (TextInputLayout) FindViewById(Resource.Id.fullNameText);
-            phoneText = (TextInputLayout) FindViewById(Resource.Id.phoneText);
-            emailText = (TextInputLayout) FindViewById(Resource.Id.emailText);
-            passwordText = (TextInputLayout) FindViewById(Resource.Id.passwordText);
-            rootView = (CoordinatorLayout) FindViewById(Resource.Id.rootView);
-            registerButton = (Button) FindViewById(Resource.Id.registerButton);
+            fullNameText = (TextInputLayout)FindViewById(Resource.Id.fullNameText);
+            phoneText = (TextInputLayout)FindViewById(Resource.Id.phoneText);
+            emailText = (TextInputLayout)FindViewById(Resource.Id.emailText);
+            passwordText = (TextInputLayout)FindViewById(Resource.Id.passwordText);
+            rootView = (CoordinatorLayout)FindViewById(Resource.Id.rootView);
+            registerButton = (Button)FindViewById(Resource.Id.registerButton);
+            loginText = (TextView)FindViewById(Resource.Id.clickToLogin);
+            loginText.Click += LoginText_Click;
 
             registerButton.Click += RegisterButton_Click;
+        }
+
+        private void LoginText_Click(object sender, EventArgs e)
+        {
+            StartActivity(typeof(LoginActivity));
+            Finish();
         }
 
         private void RegisterButton_Click(object sender, System.EventArgs e)
@@ -64,11 +77,13 @@ namespace TaniePrzejazdy.Activities
             {
                 Snackbar.Make(rootView, "Please enter a valid name.", Snackbar.LengthShort).Show();
                 return;
-            } else if (phone.Length < 9)
+            }
+            else if (phone.Length < 9)
             {
                 Snackbar.Make(rootView, "Please enter a valid phone number.", Snackbar.LengthShort).Show();
                 return;
-            } else if (!email.Contains('@'))
+            }
+            else if (!email.Contains('@'))
             {
                 Snackbar.Make(rootView, "Please enter a valid email.", Snackbar.LengthShort).Show();
                 return;
@@ -90,7 +105,22 @@ namespace TaniePrzejazdy.Activities
                 .AddOnSuccessListener(this, taskCompletionListener)
                 .AddOnFailureListener(this, taskCompletionListener);
         }
+        void InitializeFirebase()
+        {
+            var app = FirebaseApp.InitializeApp(this);
+            if (app == null)
+            {
+                var options = new FirebaseOptions.Builder()
+                    .SetApplicationId("tanieprzejazdy-bfab4")
+                    .SetApiKey("AIzaSyAJ3bPs6A49I0g9AcRzx22J-xzGi-PVntM")
+                    .SetDatabaseUrl("https://tanieprzejazdy-bfab4-default-rtdb.europe-west1.firebasedatabase.app")
+                    .SetStorageBucket("tanieprzejazdy-bfab4.appspot.com")
+                    .Build();
 
+                app = FirebaseApp.InitializeApp(this, options);
+            }
+            database = FirebaseDatabase.GetInstance(app);
+        }
         private void TaskCompletionListener_Failure(object sender, EventArgs e)
         {
             Snackbar.Make(rootView, "User registration failed", Snackbar.LengthShort).Show();
@@ -107,21 +137,19 @@ namespace TaniePrzejazdy.Activities
             userReference.SetValue(userMap);
         }
 
-        void InitializeFirebase()
-            {
-                var app = FirebaseApp.InitializeApp(this);
-                if (app == null)
-                {
-                    var options = new FirebaseOptions.Builder()
-                        .SetApplicationId("tanieprzejazdy-bfab4")
-                        .SetApiKey("AIzaSyAJ3bPs6A49I0g9AcRzx22J-xzGi-PVntM")
-                        .SetDatabaseUrl("https://tanieprzejazdy-bfab4-default-rtdb.europe-west1.firebasedatabase.app")
-                        .SetStorageBucket("tanieprzejazdy-bfab4.appspot.com")
-                        .Build();
+        void SaveToSharedPreference()
+        {
+            editor = preferences.Edit();
+            editor.PutString("email", email);
+            editor.PutString("phone", phone);
+            editor.PutString("fullname", fullname);
 
-                    app = FirebaseApp.InitializeApp(this, options);
-                }
-                database = FirebaseDatabase.GetInstance(app);
-            }
+            editor.Apply();
+        }
+
+        void RetrieveData()
+        {
+            var emailData = preferences.GetString("email",string.Empty);
+        }
     }
 }

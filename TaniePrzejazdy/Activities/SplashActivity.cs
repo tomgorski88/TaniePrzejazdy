@@ -19,7 +19,7 @@ namespace TaniePrzejazdy.Activities
         protected override void OnResume()
         {
             base.OnResume();
-            StartActivity(typeof(RegisterActivity));
+            StartActivity(typeof(LoginActivity));
         }
     }
 }

@@ -119,13 +119,13 @@
 			/>
 
 			<TextView
-					android:id="@+id/clickToLogin"
+				android:id="@+id/clickToLogin"
 				android:layout_height="wrap_content"
 				android:layout_width="match_parent"
 				android:gravity="center"
 				android:layout_marginTop="10dp"
 				android:layout_below="@+id/registerButton"
-				android:text="@string/Register"
+				android:text="@string/click_login"
 			/>
 
 			</RelativeLayout>
