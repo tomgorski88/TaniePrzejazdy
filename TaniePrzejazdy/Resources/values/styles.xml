@@ -17,6 +17,11 @@
         <item name="colorPrimaryDark">@color/tpPrimaryDark</item>
         <item name="colorAccent">@color/tpAccentColor</item>
     </style>
+
+	<style name="tpTheme.ActionBar.Transparent" parent="tpTheme">
+		<item name="colorPrimary">@android:color/transparent</item>
+	</style>
+	
 	<style name="NavigationStyle" parent="Theme.AppCompat.Light.NoActionBar">
 		<item name="colorPrimary">@color/tpAccentColor</item>
 		<item name="colorPrimaryDark">@color/tpAccentColor</item>
