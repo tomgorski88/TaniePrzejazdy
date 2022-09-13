@@ -21,8 +21,8 @@ namespace TaniePrzejazdy
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.activity_main);
 
-            btnTestConnection = (Button) FindViewById(Resource.Id.mybutton);
-            btnTestConnection.Click += BtnTestConnectionOnClick;
+            //btnTestConnection = (Button) FindViewById(Resource.Id.mybutton);
+            //btnTestConnection.Click += BtnTestConnectionOnClick;
         }
 
         private void BtnTestConnectionOnClick(object sender, EventArgs e)
