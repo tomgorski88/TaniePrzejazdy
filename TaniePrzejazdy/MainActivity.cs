@@ -15,6 +15,7 @@ using AndroidX.Core.App;
 using AndroidX.DrawerLayout.Widget;
 using Firebase;
 using Firebase.Database;
+using TaniePrzejazdy.Helpers;
 
 namespace TaniePrzejazdy
 {
@@ -31,6 +32,7 @@ namespace TaniePrzejazdy
         private LocationRequest mLocationRequest;
         private FusedLocationProviderClient locationClient;
         private Android.Locations.Location mLastLocation;
+        private LocationCallbackHelper mLocationCallback;
 
         private static readonly int UPDATE_INTERVAL = 5; //5 sekund
         private static readonly int FASTEST_INTERVAL = 5;
@@ -51,6 +53,7 @@ namespace TaniePrzejazdy
             CheckLocationPermissions();
             CreateLocationRequest();
             GetMyLocation();
+            StartLocationUpdates();
         }
 
         void ConnectControl()
@@ -128,6 +131,31 @@ namespace TaniePrzejazdy
             mLocationRequest.SetPriority(LocationRequest.PriorityHighAccuracy);
             mLocationRequest.SetSmallestDisplacement(DISPLACEMENT);
             locationClient = LocationServices.GetFusedLocationProviderClient(this);
+            mLocationCallback = new LocationCallbackHelper();
+            mLocationCallback.MyLocation += MLocationCallback_MyLocation;
+        }
+
+        private void MLocationCallback_MyLocation(object sender, LocationCallbackHelper.OnLocationCapturedEventArgs e)
+        {
+            mLastLocation = e.Location;
+            var myposition = new LatLng(mLastLocation.Latitude, mLastLocation.Longitude);
+            mainMap.AnimateCamera(CameraUpdateFactory.NewLatLngZoom(myposition, 12));
+        }
+
+        void StartLocationUpdates()
+        {
+            if (CheckLocationPermissions())
+            {
+                locationClient.RequestLocationUpdates(mLocationRequest, mLocationCallback, null);
+            }
+        }
+
+        void StopLocationUpdates()
+        {
+            if(locationClient!=null && mLocationCallback != null)
+            {
+                locationClient.RemoveLocationUpdates(mLocationCallback);
+            }
         }
 
         public async void GetMyLocation()
@@ -140,7 +168,7 @@ namespace TaniePrzejazdy
             if (mLastLocation != null)
             {
                 var myposition = new LatLng(mLastLocation.Latitude, mLastLocation.Longitude);
-                mainMap.MoveCamera(CameraUpdateFactory.NewLatLngZoom(myposition, 13));
+                mainMap.MoveCamera(CameraUpdateFactory.NewLatLngZoom(myposition, 17));
             }
         }
 
