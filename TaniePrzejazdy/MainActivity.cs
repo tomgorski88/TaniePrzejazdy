@@ -1,10 +1,17 @@
 ﻿using System;
+using System.Threading.Tasks;
+using Android;
 using Android.App;
+using Android.Content.PM;
+using Android.Gms.Location;
+using Android.Gms.Maps;
+using Android.Gms.Maps.Model;
 using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.App;
+using AndroidX.Core.App;
 using AndroidX.DrawerLayout.Widget;
 using Firebase;
 using Firebase.Database;
@@ -12,12 +19,23 @@ using Firebase.Database;
 namespace TaniePrzejazdy
 {
     [Activity(Label = "@string/app_name", Theme = "@style/tpTheme")]
-    public class MainActivity : AppCompatActivity
+    public class MainActivity : AppCompatActivity, IOnMapReadyCallback
     {
         private FirebaseDatabase database;
         private AndroidX.AppCompat.Widget.Toolbar mainToolbar;
         private DrawerLayout drawerLayout;
-        
+        private GoogleMap mainMap;
+        private readonly string[] permissionGroupLocation = {Manifest.Permission.AccessCoarseLocation, Manifest.Permission.AccessFineLocation};
+        private const int requestLocationId = 0;
+
+        private LocationRequest mLocationRequest;
+        private FusedLocationProviderClient locationClient;
+        private Android.Locations.Location mLastLocation;
+
+        private static readonly int UPDATE_INTERVAL = 5; //5 sekund
+        private static readonly int FASTEST_INTERVAL = 5;
+        private static readonly int DISPLACEMENT = 3; //meters
+
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -26,6 +44,13 @@ namespace TaniePrzejazdy
             SetContentView(Resource.Layout.activity_main);
 
             ConnectControl();
+
+            var mapFragment = (SupportMapFragment) SupportFragmentManager.FindFragmentById(Resource.Id.map);
+            mapFragment.GetMapAsync(this);
+
+            CheckLocationPermissions();
+            CreateLocationRequest();
+            GetMyLocation();
         }
 
         void ConnectControl()
@@ -72,6 +97,62 @@ namespace TaniePrzejazdy
             dbref.SetValue("Ticket1");
 
             Toast.MakeText(this, "Completed", ToastLength.Short);
+        }
+
+        public void OnMapReady(GoogleMap googleMap)
+        {
+            mainMap = googleMap;
+        }
+
+        bool CheckLocationPermissions()
+        {
+            bool permissionGranted;
+            if (ActivityCompat.CheckSelfPermission(this, Manifest.Permission.AccessFineLocation) != Android.Content.PM.Permission.Granted &&
+                ActivityCompat.CheckSelfPermission(this, Manifest.Permission.AccessCoarseLocation) != Android.Content.PM.Permission.Granted)
+            {
+                permissionGranted = false;
+                RequestPermissions(permissionGroupLocation, requestLocationId);
+            }
+            else
+            {
+                permissionGranted = true;
+            }
+            return permissionGranted;
+        }
+
+        public void CreateLocationRequest()
+        {
+            mLocationRequest = new LocationRequest();
+            mLocationRequest.SetInterval(UPDATE_INTERVAL);
+            mLocationRequest.SetFastestInterval(FASTEST_INTERVAL);
+            mLocationRequest.SetPriority(LocationRequest.PriorityHighAccuracy);
+            mLocationRequest.SetSmallestDisplacement(DISPLACEMENT);
+            locationClient = LocationServices.GetFusedLocationProviderClient(this);
+        }
+
+        public async void GetMyLocation()
+        {
+            if (!CheckLocationPermissions())
+            {
+                return;
+            }
+            mLastLocation = await locationClient.GetLastLocationAsync();
+            if (mLastLocation != null)
+            {
+                var myposition = new LatLng(mLastLocation.Latitude, mLastLocation.Longitude);
+                mainMap.MoveCamera(CameraUpdateFactory.NewLatLngZoom(myposition, 13));
+            }
+        }
+
+        public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Permission[] grantResults)
+        {
+            if (grantResults[0] == (int)Android.Content.PM.Permission.Granted)
+            {
+                Toast.MakeText(this, "Permission was granted", ToastLength.Short).Show();
+            } else
+            {
+                Toast.MakeText(this, "Permission was denied", ToastLength.Short).Show();
+            }            
         }
     }
 }

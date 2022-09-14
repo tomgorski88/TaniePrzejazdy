@@ -5,7 +5,7 @@
     <SelectedPlatformGroup>PhysicalDevice</SelectedPlatformGroup>
     <ActiveDebugProfile>Google Pixel 4 XL</ActiveDebugProfile>
     <DefaultDevice>pixel_4_xl_-_api_23</DefaultDevice>
-    <AndroidDesignerPreferredTheme>tpTheme</AndroidDesignerPreferredTheme>
+    <AndroidDesignerPreferredTheme>AppTheme</AndroidDesignerPreferredTheme>
     <AndroidDesignerPreferredDevice>Nexus 4</AndroidDesignerPreferredDevice>
     <ProjectView>ShowAllFiles</ProjectView>
   </PropertyGroup>

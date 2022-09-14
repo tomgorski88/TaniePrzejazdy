@@ -8,8 +8,14 @@
     <FrameLayout
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:background="@color/tpAsh"
-        >
+        android:background="@color/tpAsh">
+
+        <fragment
+            android:id="@+id/map"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:name="com.google.android.gms.maps.SupportMapFragment" />
+
         <androidx.appcompat.widget.Toolbar
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
@@ -102,6 +108,13 @@
                 </LinearLayout>
             </FrameLayout>
         </LinearLayout>
+
+        <ImageView
+            android:id="@+id/centerMarker"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_gravity="center"
+            android:src="@drawable/greenmarker"/>
         <RelativeLayout
             android:id="@+id/myLocation"
             android:clickable="true"
