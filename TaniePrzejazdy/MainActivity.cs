@@ -7,6 +7,7 @@ using Android.Content.PM;
 using Android.Gms.Location;
 using Android.Gms.Maps;
 using Android.Gms.Maps.Model;
+using Android.Graphics;
 using Android.OS;
 using Android.Runtime;
 using Android.Views;
@@ -32,6 +33,11 @@ namespace TaniePrzejazdy
         private TextView pickupLocationText;
         private TextView destinationText;
 
+        private RadioButton pickupRadio;
+        private RadioButton destinationRadio;
+
+        private ImageView centerMarker;
+
         private RelativeLayout layoutPickup;
         private RelativeLayout layoutDestination;
 
@@ -43,9 +49,19 @@ namespace TaniePrzejazdy
         private Android.Locations.Location mLastLocation;
         private LocationCallbackHelper mLocationCallback;
 
-        private static readonly int UPDATE_INTERVAL = 5; //5 sekund
+        private static readonly int UPDATE_INTERVAL = 5000; //5 sekund
         private static readonly int FASTEST_INTERVAL = 5;
         private static readonly int DISPLACEMENT = 3; //meters
+
+        private MapFunctionHelper mapFunctionHelper;
+
+        //Trip details
+        private LatLng pickupLocationLatLng;
+        private LatLng destinationLocationLatLng;
+
+        // Flags
+        private int addressRequest = 1;
+        private bool takeAddressFromSearch = false;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -82,12 +98,35 @@ namespace TaniePrzejazdy
             //TextView
             pickupLocationText = (TextView)FindViewById(Resource.Id.pickupText);
             destinationText = (TextView)FindViewById(Resource.Id.destinationText);
-
+            //Buttons
+            pickupRadio = (RadioButton)FindViewById(Resource.Id.pickupRadio);
+            destinationRadio = (RadioButton)FindViewById(Resource.Id.destinationRadio);
+            pickupRadio.Click += PickupRadio_Click;
+            destinationRadio.Click += DestinationRadio_Click;
             // Layouts
             layoutPickup = (RelativeLayout)FindViewById(Resource.Id.layoutPickup);
             layoutDestination = (RelativeLayout)FindViewById(Resource.Id.layoutDestination);
             layoutPickup.Click += LayoutPickup_Click;
             layoutDestination.Click += LayoutDestination_Click;
+
+            centerMarker = (ImageView)FindViewById(Resource.Id.centerMarker);
+        }
+        private void PickupRadio_Click(object sender, EventArgs e)
+        {
+            addressRequest = 1;
+            pickupRadio.Checked = true;
+            destinationRadio.Checked = false;
+            takeAddressFromSearch = false;
+            centerMarker.SetColorFilter(Color.DarkGreen);
+        }
+
+        private void DestinationRadio_Click(object sender, EventArgs e)
+        {
+            addressRequest = 2;
+            pickupRadio.Checked = false;
+            destinationRadio.Checked = true;
+            takeAddressFromSearch = false;
+            centerMarker.SetColorFilter(Color.Red);
         }
 
         private void LayoutPickup_Click(object sender, EventArgs e)
@@ -151,6 +190,28 @@ namespace TaniePrzejazdy
         public void OnMapReady(GoogleMap googleMap)
         {
             mainMap = googleMap;
+            var mapkey = Resources.GetString(Resource.String.mapkey);
+            mapFunctionHelper = new MapFunctionHelper(mapkey);
+
+            mainMap.CameraIdle += MainMap_CameraIdle;
+
+        }
+
+        private async void MainMap_CameraIdle(object sender, EventArgs e)
+        {
+            if (!takeAddressFromSearch)
+            {
+                if (addressRequest == 1)
+                {
+                    pickupLocationLatLng = mainMap.CameraPosition.Target;
+                    pickupLocationText.Text = await mapFunctionHelper.FindCoordinateAddress(pickupLocationLatLng);
+                }
+                else if (addressRequest == 2)
+                {
+                    destinationLocationLatLng = mainMap.CameraPosition.Target;
+                    destinationText.Text = await mapFunctionHelper.FindCoordinateAddress(destinationLocationLatLng);
+                }
+            }
         }
 
         bool CheckLocationPermissions()
@@ -237,26 +298,35 @@ namespace TaniePrzejazdy
                 Toast.MakeText(this, "Permission was denied", ToastLength.Short).Show();
             }            
         }
-        protected override void OnActivityResult(int requestCode, [GeneratedEnum] Result resultCode, Android.Content.Intent data)
+        protected override void OnActivityResult(int requestCode, [GeneratedEnum] Android.App.Result resultCode, Android.Content.Intent data)
         {
             base.OnActivityResult(requestCode, resultCode, data);
             if(requestCode == 1)
             {
                 if(resultCode == Android.App.Result.Ok)
                 {
+                    takeAddressFromSearch = true;
+                    pickupRadio.Checked = false;
+                    destinationRadio.Checked = false;
+
                     var place = Autocomplete.GetPlaceFromIntent(data);
-                    pickupLocationText.Text = place.Name.ToString();
-                    
+                    pickupLocationText.Text = place.Name.ToString();                    
                     mainMap.AnimateCamera(CameraUpdateFactory.NewLatLngZoom(place.LatLng, 15));
+                    centerMarker.SetColorFilter(Color.DarkGreen);
                 }
             }
             if (requestCode == 2)
             {
                 if (resultCode == Android.App.Result.Ok)
                 {
+                    takeAddressFromSearch = true;
+                    pickupRadio.Checked = false;
+                    destinationRadio.Checked = false;
+
                     var place = Autocomplete.GetPlaceFromIntent(data);
                     destinationText.Text = place.Name.ToString();
                     mainMap.AnimateCamera(CameraUpdateFactory.NewLatLngZoom(place.LatLng, 15));
+                    centerMarker.SetColorFilter(Color.Red);
                 }
             }
         }
