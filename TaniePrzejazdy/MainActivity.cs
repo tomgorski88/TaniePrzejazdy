@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Android;
 using Android.App;
@@ -15,6 +16,7 @@ using AndroidX.Core.App;
 using AndroidX.DrawerLayout.Widget;
 using Firebase;
 using Firebase.Database;
+using Google.Places;
 using TaniePrzejazdy.Helpers;
 
 namespace TaniePrzejazdy
@@ -26,6 +28,13 @@ namespace TaniePrzejazdy
         private AndroidX.AppCompat.Widget.Toolbar mainToolbar;
         private DrawerLayout drawerLayout;
         private GoogleMap mainMap;
+
+        private TextView pickupLocationText;
+        private TextView destinationText;
+
+        private RelativeLayout layoutPickup;
+        private RelativeLayout layoutDestination;
+
         private readonly string[] permissionGroupLocation = {Manifest.Permission.AccessCoarseLocation, Manifest.Permission.AccessFineLocation};
         private const int requestLocationId = 0;
 
@@ -47,26 +56,63 @@ namespace TaniePrzejazdy
 
             ConnectControl();
 
-            var mapFragment = (SupportMapFragment) SupportFragmentManager.FindFragmentById(Resource.Id.map);
+            var mapFragment = (SupportMapFragment) SupportFragmentManager.FindFragmentById(Resource.Id.map).JavaCast<SupportMapFragment>();
             mapFragment.GetMapAsync(this);
 
             CheckLocationPermissions();
             CreateLocationRequest();
             GetMyLocation();
             StartLocationUpdates();
+            InitializePlaces();
         }
 
         void ConnectControl()
         {
+            // DrawerLayout
             drawerLayout = (DrawerLayout)FindViewById(Resource.Id.drawerLayout);
+
+            //Toolbar
             mainToolbar = (AndroidX.AppCompat.Widget.Toolbar)FindViewById(Resource.Id.mainToolbar);
             SetSupportActionBar(mainToolbar);
             SupportActionBar.Title = "";
             var actionBar = SupportActionBar;
             actionBar.SetHomeAsUpIndicator(Resource.Mipmap.ic_menu_action);
             actionBar.SetDisplayHomeAsUpEnabled(true);
+
+            //TextView
+            pickupLocationText = (TextView)FindViewById(Resource.Id.pickupText);
+            destinationText = (TextView)FindViewById(Resource.Id.destinationText);
+
+            // Layouts
+            layoutPickup = (RelativeLayout)FindViewById(Resource.Id.layoutPickup);
+            layoutDestination = (RelativeLayout)FindViewById(Resource.Id.layoutDestination);
+            layoutPickup.Click += LayoutPickup_Click;
+            layoutDestination.Click += LayoutDestination_Click;
         }
 
+        private void LayoutPickup_Click(object sender, EventArgs e)
+        {
+            List<Place.Field> fields = new List<Place.Field>();
+            fields.Add(Place.Field.Id);
+            fields.Add(Place.Field.Name);
+            fields.Add(Place.Field.LatLng);
+            fields.Add(Place.Field.Address);
+
+            var intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.Overlay, fields).SetCountry("PL").Build(this);
+            StartActivityForResult(intent, 1);
+        }
+        private void LayoutDestination_Click(object sender, EventArgs e)
+        {
+            List<Place.Field> fields = new List<Place.Field>();
+            fields.Add(Place.Field.Id);
+            fields.Add(Place.Field.Name);
+            fields.Add(Place.Field.LatLng);
+            fields.Add(Place.Field.Address);
+
+            var intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.Overlay, fields).SetCountry("PL").Build(this);
+            StartActivityForResult(intent, 2);
+            
+        }
 
         public override bool OnOptionsItemSelected(IMenuItem item)
         {
@@ -135,6 +181,15 @@ namespace TaniePrzejazdy
             mLocationCallback.MyLocation += MLocationCallback_MyLocation;
         }
 
+        void InitializePlaces()
+        {
+            string mapkey = Resources.GetString(Resource.String.mapkey);
+            if (!PlacesApi.IsInitialized)
+            {
+                PlacesApi.Initialize(this, mapkey);
+            }
+        }
+
         private void MLocationCallback_MyLocation(object sender, LocationCallbackHelper.OnLocationCapturedEventArgs e)
         {
             mLastLocation = e.Location;
@@ -168,7 +223,7 @@ namespace TaniePrzejazdy
             if (mLastLocation != null)
             {
                 var myposition = new LatLng(mLastLocation.Latitude, mLastLocation.Longitude);
-                mainMap.MoveCamera(CameraUpdateFactory.NewLatLngZoom(myposition, 17));
+                mainMap.MoveCamera(CameraUpdateFactory.NewLatLngZoom(myposition, 15));
             }
         }
 
@@ -181,6 +236,29 @@ namespace TaniePrzejazdy
             {
                 Toast.MakeText(this, "Permission was denied", ToastLength.Short).Show();
             }            
+        }
+        protected override void OnActivityResult(int requestCode, [GeneratedEnum] Result resultCode, Android.Content.Intent data)
+        {
+            base.OnActivityResult(requestCode, resultCode, data);
+            if(requestCode == 1)
+            {
+                if(resultCode == Android.App.Result.Ok)
+                {
+                    var place = Autocomplete.GetPlaceFromIntent(data);
+                    pickupLocationText.Text = place.Name.ToString();
+                    
+                    mainMap.AnimateCamera(CameraUpdateFactory.NewLatLngZoom(place.LatLng, 15));
+                }
+            }
+            if (requestCode == 2)
+            {
+                if (resultCode == Android.App.Result.Ok)
+                {
+                    var place = Autocomplete.GetPlaceFromIntent(data);
+                    destinationText.Text = place.Name.ToString();
+                    mainMap.AnimateCamera(CameraUpdateFactory.NewLatLngZoom(place.LatLng, 15));
+                }
+            }
         }
     }
 }
