@@ -71,6 +71,7 @@
     <Compile Include="Activities\RegisterActivity.cs" />
     <Compile Include="Activities\SplashActivity.cs" />
     <Compile Include="EventListeners\TaskCompletionListener.cs" />
+    <Compile Include="Helpers\DirectionParser.cs" />
     <Compile Include="Helpers\GeocodingParser.cs" />
     <Compile Include="Helpers\LocationCallbackHelper.cs" />
     <Compile Include="Helpers\MapFunctionHelper.cs" />

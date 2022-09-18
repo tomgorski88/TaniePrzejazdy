@@ -130,9 +130,30 @@ namespace TaniePrzejazdy
             locationSetButton.Visibility = ViewStates.Visible;
         }
 
-        private void LocationSetButton_Click(object sender, EventArgs e)
+        private void TripDrawnOnMap()
         {
-            tripDetailsBottomSheetBehavior.State = BottomSheetBehavior.StateExpanded;
+            layoutDestination.Clickable = false;
+            layoutPickup.Clickable = false;
+            pickupRadio.Enabled = false;
+            destinationRadio.Enabled = false;
+            takeAddressFromSearch = true;
+            centerMarker.Visibility = ViewStates.Invisible;
+        }
+
+        private async void LocationSetButton_Click(object sender, EventArgs e)
+        {
+            locationSetButton.Text = "Please wait...";
+            locationSetButton.Enabled = false;
+
+            var json = await mapFunctionHelper.GetDirectionJson(pickupLocationLatLng, destinationLocationLatLng);
+            if (!string.IsNullOrEmpty(json))
+            {
+                mapFunctionHelper.DrawTripOnMap(json);
+                tripDetailsBottomSheetBehavior.State = BottomSheetBehavior.StateExpanded;
+                TripDrawnOnMap();
+            }
+            locationSetButton.Text = "Done";
+            locationSetButton.Enabled = true;
         }
 
         private void FavouritePlacesButton_Click(object sender, EventArgs e)
@@ -220,7 +241,7 @@ namespace TaniePrzejazdy
         {
             mainMap = googleMap;
             var mapkey = Resources.GetString(Resource.String.mapkey);
-            mapFunctionHelper = new MapFunctionHelper(mapkey);
+            mapFunctionHelper = new MapFunctionHelper(mapkey, googleMap);
 
             mainMap.CameraIdle += MainMap_CameraIdle;
 
@@ -285,7 +306,7 @@ namespace TaniePrzejazdy
         {
             mLastLocation = e.Location;
             var myposition = new LatLng(mLastLocation.Latitude, mLastLocation.Longitude);
-            mainMap.AnimateCamera(CameraUpdateFactory.NewLatLngZoom(myposition, 12));
+            mainMap.AnimateCamera(CameraUpdateFactory.NewLatLngZoom(myposition, 15));
         }
 
         void StartLocationUpdates()
@@ -320,13 +341,14 @@ namespace TaniePrzejazdy
 
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Permission[] grantResults)
         {
+            if(grantResults.Length > 1)
+            {
+                return;
+            }
             if (grantResults[0] == (int)Android.Content.PM.Permission.Granted)
             {
-                Toast.MakeText(this, "Permission was granted", ToastLength.Short).Show();
-            } else
-            {
-                Toast.MakeText(this, "Permission was denied", ToastLength.Short).Show();
-            }            
+                StartLocationUpdates();
+            }          
         }
         protected override void OnActivityResult(int requestCode, [GeneratedEnum] Android.App.Result resultCode, Android.Content.Intent data)
         {
@@ -340,7 +362,8 @@ namespace TaniePrzejazdy
                     destinationRadio.Checked = false;
 
                     var place = Autocomplete.GetPlaceFromIntent(data);
-                    pickupLocationText.Text = place.Name.ToString();                    
+                    pickupLocationText.Text = place.Name.ToString();
+                    pickupLocationLatLng = place.LatLng;
                     mainMap.AnimateCamera(CameraUpdateFactory.NewLatLngZoom(place.LatLng, 15));
                     centerMarker.SetColorFilter(Color.DarkGreen);
                 }
@@ -355,6 +378,7 @@ namespace TaniePrzejazdy
 
                     var place = Autocomplete.GetPlaceFromIntent(data);
                     destinationText.Text = place.Name.ToString();
+                    destinationLocationLatLng = place.LatLng;
                     mainMap.AnimateCamera(CameraUpdateFactory.NewLatLngZoom(place.LatLng, 15));
                     centerMarker.SetColorFilter(Color.Red);
                     TripLocationsSet();
