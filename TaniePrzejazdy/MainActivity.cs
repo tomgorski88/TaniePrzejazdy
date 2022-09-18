@@ -17,6 +17,7 @@ using AndroidX.Core.App;
 using AndroidX.DrawerLayout.Widget;
 using Firebase;
 using Firebase.Database;
+using Google.Android.Material.BottomSheet;
 using Google.Places;
 using TaniePrzejazdy.Helpers;
 
@@ -35,11 +36,15 @@ namespace TaniePrzejazdy
 
         private RadioButton pickupRadio;
         private RadioButton destinationRadio;
+        private Button favouritePlacesButton;
+        private Button locationSetButton;
 
         private ImageView centerMarker;
 
         private RelativeLayout layoutPickup;
         private RelativeLayout layoutDestination;
+
+        private BottomSheetBehavior tripDetailsBottomSheetBehavior;
 
         private readonly string[] permissionGroupLocation = {Manifest.Permission.AccessCoarseLocation, Manifest.Permission.AccessFineLocation};
         private const int requestLocationId = 0;
@@ -101,8 +106,12 @@ namespace TaniePrzejazdy
             //Buttons
             pickupRadio = (RadioButton)FindViewById(Resource.Id.pickupRadio);
             destinationRadio = (RadioButton)FindViewById(Resource.Id.destinationRadio);
+            favouritePlacesButton = (Button)FindViewById(Resource.Id.favouritePlacesButton);
+            locationSetButton = (Button)FindViewById(Resource.Id.locationSetButton);
             pickupRadio.Click += PickupRadio_Click;
             destinationRadio.Click += DestinationRadio_Click;
+            favouritePlacesButton.Click += FavouritePlacesButton_Click;
+            locationSetButton.Click += LocationSetButton_Click;
             // Layouts
             layoutPickup = (RelativeLayout)FindViewById(Resource.Id.layoutPickup);
             layoutDestination = (RelativeLayout)FindViewById(Resource.Id.layoutDestination);
@@ -110,7 +119,27 @@ namespace TaniePrzejazdy
             layoutDestination.Click += LayoutDestination_Click;
 
             centerMarker = (ImageView)FindViewById(Resource.Id.centerMarker);
+
+            FrameLayout tripDetailsView = (FrameLayout)FindViewById(Resource.Id.tripdetails_bottomsheet);
+            tripDetailsBottomSheetBehavior = BottomSheetBehavior.From(tripDetailsView);
         }
+
+        private void TripLocationsSet()
+        {
+            favouritePlacesButton.Visibility = ViewStates.Invisible;
+            locationSetButton.Visibility = ViewStates.Visible;
+        }
+
+        private void LocationSetButton_Click(object sender, EventArgs e)
+        {
+            tripDetailsBottomSheetBehavior.State = BottomSheetBehavior.StateExpanded;
+        }
+
+        private void FavouritePlacesButton_Click(object sender, EventArgs e)
+        {
+            
+        }
+
         private void PickupRadio_Click(object sender, EventArgs e)
         {
             addressRequest = 1;
@@ -210,6 +239,7 @@ namespace TaniePrzejazdy
                 {
                     destinationLocationLatLng = mainMap.CameraPosition.Target;
                     destinationText.Text = await mapFunctionHelper.FindCoordinateAddress(destinationLocationLatLng);
+                    TripLocationsSet();
                 }
             }
         }
@@ -327,6 +357,7 @@ namespace TaniePrzejazdy
                     destinationText.Text = place.Name.ToString();
                     mainMap.AnimateCamera(CameraUpdateFactory.NewLatLngZoom(place.LatLng, 15));
                     centerMarker.SetColorFilter(Color.Red);
+                    TripLocationsSet();
                 }
             }
         }

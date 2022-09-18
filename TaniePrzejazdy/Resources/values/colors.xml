@@ -5,6 +5,7 @@
     <color name="colorAccent">#3498db</color>
 	<color name="splashBackground">#fff</color>
 
+	<color name="tpBlack">#000</color>
 	<color name="tpPrimary">#1C4258</color>
 	<color name="tpPrimaryDark">#102A38</color>
 	<color name="tpAccentColor">#EE861F</color>
