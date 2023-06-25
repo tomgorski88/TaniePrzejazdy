@@ -16,6 +16,11 @@ namespace TaniePrzejazdy.Helpers
     {
         private readonly string mapKey;
         private readonly GoogleMap map;
+        public double distance;
+        public double duration;
+        public string distanceString;
+        public string durationString;
+
         public MapFunctionHelper(string mMapKey, GoogleMap mmap)
         {
             mapKey = mMapKey;
@@ -113,6 +118,26 @@ namespace TaniePrzejazdy.Helpers
             map.AnimateCamera(CameraUpdateFactory.NewLatLngBounds(tripBound, 470));
             map.SetPadding(40, 70, 40, 70);
             pickupMarker.ShowInfoWindow();
+
+            duration = directionData.routes[0].legs[0].duration.value;
+            distance = directionData.routes[0].legs[0].distance.value;
+            durationString = directionData.routes[0].legs[0].duration.text;
+            distanceString = directionData.routes[0].legs[0].distance.text;
+        }
+
+        public double EstimateFares()
+        {
+            var baseFare = 20;// PLN
+            var distanceFare = 5; // PLN per km
+            var timeFare = 3; // PLN per minute
+
+            var kms = distance / 1000 * distanceFare;
+            var mins = duration / 60 * timeFare;
+
+            var amount = kms + mins + baseFare;
+            var fare = Math.Floor(amount / 10) * 10;
+
+            return fare;
         }
     }
 

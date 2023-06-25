@@ -148,7 +148,14 @@ namespace TaniePrzejazdy
             var json = await mapFunctionHelper.GetDirectionJson(pickupLocationLatLng, destinationLocationLatLng);
             if (!string.IsNullOrEmpty(json))
             {
+                var textFare = (TextView)FindViewById(Resource.Id.tripEstimateFareText);
+                var textTime = (TextView)FindViewById(Resource.Id.newTripTimeText);
+
                 mapFunctionHelper.DrawTripOnMap(json);
+
+                textFare.Text = mapFunctionHelper.EstimateFares().ToString() + " PLN";
+                textTime.Text = mapFunctionHelper.durationString;
+
                 tripDetailsBottomSheetBehavior.State = BottomSheetBehavior.StateExpanded;
                 TripDrawnOnMap();
             }
