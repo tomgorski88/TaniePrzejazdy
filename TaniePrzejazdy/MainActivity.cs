@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Android;
 using Android.App;
@@ -19,6 +20,8 @@ using Firebase;
 using Firebase.Database;
 using Google.Android.Material.BottomSheet;
 using Google.Places;
+using TaniePrzejazdy.EventListeners;
+using TaniePrzejazdy.Fragments;
 using TaniePrzejazdy.Helpers;
 
 namespace TaniePrzejazdy
@@ -26,6 +29,8 @@ namespace TaniePrzejazdy
     [Activity(Label = "@string/app_name", Theme = "@style/tpTheme")]
     public class MainActivity : AppCompatActivity, IOnMapReadyCallback
     {
+        UserProfileEventListener profileEventListener = new UserProfileEventListener();
+
         private FirebaseDatabase database;
         private AndroidX.AppCompat.Widget.Toolbar mainToolbar;
         private DrawerLayout drawerLayout;
@@ -38,6 +43,7 @@ namespace TaniePrzejazdy
         private RadioButton destinationRadio;
         private Button favouritePlacesButton;
         private Button locationSetButton;
+        private Button requestDriverButton;
 
         private ImageView centerMarker;
 
@@ -68,6 +74,9 @@ namespace TaniePrzejazdy
         private int addressRequest = 1;
         private bool takeAddressFromSearch = false;
 
+        //Fragments
+        RequestDriver requestDriverFragment;
+
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -85,6 +94,8 @@ namespace TaniePrzejazdy
             GetMyLocation();
             StartLocationUpdates();
             InitializePlaces();
+
+            profileEventListener.Create();
         }
 
         void ConnectControl()
@@ -108,10 +119,13 @@ namespace TaniePrzejazdy
             destinationRadio = (RadioButton)FindViewById(Resource.Id.destinationRadio);
             favouritePlacesButton = (Button)FindViewById(Resource.Id.favouritePlacesButton);
             locationSetButton = (Button)FindViewById(Resource.Id.locationSetButton);
+            requestDriverButton = (Button)FindViewById(Resource.Id.requestDriverButton);
             pickupRadio.Click += PickupRadio_Click;
             destinationRadio.Click += DestinationRadio_Click;
             favouritePlacesButton.Click += FavouritePlacesButton_Click;
             locationSetButton.Click += LocationSetButton_Click;
+            requestDriverButton.Click += RequestDriverButton_Click;
+
             // Layouts
             layoutPickup = (RelativeLayout)FindViewById(Resource.Id.layoutPickup);
             layoutDestination = (RelativeLayout)FindViewById(Resource.Id.layoutDestination);
@@ -124,20 +138,15 @@ namespace TaniePrzejazdy
             tripDetailsBottomSheetBehavior = BottomSheetBehavior.From(tripDetailsView);
         }
 
-        private void TripLocationsSet()
-        {
-            favouritePlacesButton.Visibility = ViewStates.Invisible;
-            locationSetButton.Visibility = ViewStates.Visible;
-        }
 
-        private void TripDrawnOnMap()
+        #region CLICK EVENT HANDLERS
+        private void RequestDriverButton_Click(object sender, EventArgs e)
         {
-            layoutDestination.Clickable = false;
-            layoutPickup.Clickable = false;
-            pickupRadio.Enabled = false;
-            destinationRadio.Enabled = false;
-            takeAddressFromSearch = true;
-            centerMarker.Visibility = ViewStates.Invisible;
+            requestDriverFragment = new RequestDriver(mapFunctionHelper.EstimateFares());
+            requestDriverFragment.Cancelable = false;
+
+            var trans = SupportFragmentManager.BeginTransaction();
+            requestDriverFragment.Show(trans, "Request");
         }
 
         private async void LocationSetButton_Click(object sender, EventArgs e)
@@ -209,41 +218,9 @@ namespace TaniePrzejazdy
             StartActivityForResult(intent, 2);
             
         }
+        #endregion        
 
-        public override bool OnOptionsItemSelected(IMenuItem item)
-        {
-            switch (item.ItemId)
-            {
-                case Android.Resource.Id.Home:
-                    drawerLayout.OpenDrawer((int)GravityFlags.Left);
-                    return true;
-                default:
-                    return base.OnOptionsItemSelected(item);
-            }
-        }
-
-        void InitializeDatabase()
-        {
-            var app = FirebaseApp.InitializeApp(this);
-            if (app == null)
-            {
-                var options = new FirebaseOptions.Builder()
-                    .SetApplicationId("tanieprzejazdy-bfab4")
-                    .SetApiKey("AIzaSyAJ3bPs6A49I0g9AcRzx22J-xzGi-PVntM")
-                    .SetDatabaseUrl("https://tanieprzejazdy-bfab4-default-rtdb.europe-west1.firebasedatabase.app")
-                    .SetStorageBucket("tanieprzejazdy-bfab4.appspot.com")
-                    .Build();
-
-                app = FirebaseApp.InitializeApp(this, options);
-            }
-            database = FirebaseDatabase.GetInstance(app);
-
-            var dbref = database.GetReference("UserSupport");
-            dbref.SetValue("Ticket1");
-
-            Toast.MakeText(this, "Completed", ToastLength.Short);
-        }
-
+        #region MAP AND LOCATION SERVICES
         public void OnMapReady(GoogleMap googleMap)
         {
             mainMap = googleMap;
@@ -345,10 +322,30 @@ namespace TaniePrzejazdy
                 mainMap.MoveCamera(CameraUpdateFactory.NewLatLngZoom(myposition, 15));
             }
         }
+        #endregion
 
+        #region TRIP CONFIGURATIONS
+        private void TripLocationsSet()
+        {
+            favouritePlacesButton.Visibility = ViewStates.Invisible;
+            locationSetButton.Visibility = ViewStates.Visible;
+        }
+
+        private void TripDrawnOnMap()
+        {
+            layoutDestination.Clickable = false;
+            layoutPickup.Clickable = false;
+            pickupRadio.Enabled = false;
+            destinationRadio.Enabled = false;
+            takeAddressFromSearch = true;
+            centerMarker.Visibility = ViewStates.Invisible;
+        }
+        #endregion
+
+        #region OVERRIDE METHODS
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Permission[] grantResults)
         {
-            if(grantResults.Length > 1)
+            if(grantResults.Length < 1)
             {
                 return;
             }
@@ -390,6 +387,19 @@ namespace TaniePrzejazdy
                     centerMarker.SetColorFilter(Color.Red);
                     TripLocationsSet();
                 }
+            }
+        }
+        #endregion
+
+        public override bool OnOptionsItemSelected(IMenuItem item)
+        {
+            switch (item.ItemId)
+            {
+                case Android.Resource.Id.Home:
+                    drawerLayout.OpenDrawer((int)GravityFlags.Left);
+                    return true;
+                default:
+                    return base.OnOptionsItemSelected(item);
             }
         }
     }

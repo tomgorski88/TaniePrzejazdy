@@ -75,6 +75,9 @@
     <Compile Include="Activities\RegisterActivity.cs" />
     <Compile Include="Activities\SplashActivity.cs" />
     <Compile Include="EventListeners\TaskCompletionListener.cs" />
+    <Compile Include="EventListeners\UserProfileEventListener.cs" />
+    <Compile Include="Fragments\RequestDriver.cs" />
+    <Compile Include="Helpers\AppDataHelper.cs" />
     <Compile Include="Helpers\DirectionParser.cs" />
     <Compile Include="Helpers\GeocodingParser.cs" />
     <Compile Include="Helpers\LocationCallbackHelper.cs" />
@@ -324,6 +327,11 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\tripdetails.xml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\request_driver.xml">
       <SubType>Designer</SubType>
     </AndroidResource>
   </ItemGroup>

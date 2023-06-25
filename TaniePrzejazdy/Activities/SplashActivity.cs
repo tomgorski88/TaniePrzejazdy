@@ -3,6 +3,7 @@ using Android.App;
 using Android.Content.PM;
 using Android.OS;
 using AndroidX.AppCompat.App;
+using TaniePrzejazdy.Helpers;
 
 namespace TaniePrzejazdy.Activities
 {
@@ -19,7 +20,15 @@ namespace TaniePrzejazdy.Activities
         protected override void OnResume()
         {
             base.OnResume();
-            StartActivity(typeof(LoginActivity));
+            var currentUser = AppDataHelper.GetCurrentUser();
+            if (currentUser == null)
+            {
+                StartActivity(typeof(LoginActivity));
+            }
+            else
+            {
+                StartActivity(typeof(MainActivity));
+            }
         }
     }
 }
