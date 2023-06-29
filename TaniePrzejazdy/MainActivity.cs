@@ -20,6 +20,7 @@ using Firebase;
 using Firebase.Database;
 using Google.Android.Material.BottomSheet;
 using Google.Places;
+using TaniePrzejazdy.DataModel;
 using TaniePrzejazdy.EventListeners;
 using TaniePrzejazdy.Fragments;
 using TaniePrzejazdy.Helpers;
@@ -30,6 +31,7 @@ namespace TaniePrzejazdy
     public class MainActivity : AppCompatActivity, IOnMapReadyCallback
     {
         UserProfileEventListener profileEventListener = new UserProfileEventListener();
+        CreateRequestEventListener requestListener;
 
         private FirebaseDatabase database;
         private AndroidX.AppCompat.Widget.Toolbar mainToolbar;
@@ -69,13 +71,18 @@ namespace TaniePrzejazdy
         //Trip details
         private LatLng pickupLocationLatLng;
         private LatLng destinationLocationLatLng;
+        private string pickupAddress;
+        private string destinationAddress;
 
         // Flags
         private int addressRequest = 1;
         private bool takeAddressFromSearch = false;
 
         //Fragments
-        RequestDriver requestDriverFragment;
+        private RequestDriver requestDriverFragment;
+
+        //DataModel
+        private NewTripDetails newTripDetails;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -147,6 +154,26 @@ namespace TaniePrzejazdy
 
             var trans = SupportFragmentManager.BeginTransaction();
             requestDriverFragment.Show(trans, "Request");
+
+            newTripDetails = new NewTripDetails
+            {
+                DestinationAddress = destinationAddress,
+                PickupAddress = pickupAddress,
+                DestinationLat = destinationLocationLatLng.Latitude,
+                DestinationLng = destinationLocationLatLng.Longitude,
+                DistanceString = mapFunctionHelper.distanceString,
+                DistanceValue = mapFunctionHelper.distance,
+                DurationString = mapFunctionHelper.durationString,
+                DurationValue = mapFunctionHelper.duration,
+                EstimateFare = mapFunctionHelper.EstimateFares(),
+                PaymentMethod = "cash",
+                PickupLat = pickupLocationLatLng.Latitude,
+                PickupLng = pickupLocationLatLng.Longitude,
+                TimeStamp = DateTime.Now
+            };
+
+            requestListener = new CreateRequestEventListener(newTripDetails);
+            requestListener.CreateRequest();
         }
 
         private async void LocationSetButton_Click(object sender, EventArgs e)
@@ -238,12 +265,14 @@ namespace TaniePrzejazdy
                 if (addressRequest == 1)
                 {
                     pickupLocationLatLng = mainMap.CameraPosition.Target;
-                    pickupLocationText.Text = await mapFunctionHelper.FindCoordinateAddress(pickupLocationLatLng);
+                    pickupAddress = await mapFunctionHelper.FindCoordinateAddress(pickupLocationLatLng);
+                    pickupLocationText.Text = pickupAddress;
                 }
                 else if (addressRequest == 2)
                 {
                     destinationLocationLatLng = mainMap.CameraPosition.Target;
-                    destinationText.Text = await mapFunctionHelper.FindCoordinateAddress(destinationLocationLatLng);
+                    destinationAddress = await mapFunctionHelper.FindCoordinateAddress(destinationLocationLatLng);
+                    destinationText.Text = destinationAddress;
                     TripLocationsSet();
                 }
             }
@@ -368,6 +397,8 @@ namespace TaniePrzejazdy
                     var place = Autocomplete.GetPlaceFromIntent(data);
                     pickupLocationText.Text = place.Name.ToString();
                     pickupLocationLatLng = place.LatLng;
+                    pickupAddress = place.Name.ToString(); ;
+
                     mainMap.AnimateCamera(CameraUpdateFactory.NewLatLngZoom(place.LatLng, 15));
                     centerMarker.SetColorFilter(Color.DarkGreen);
                 }
@@ -383,6 +414,7 @@ namespace TaniePrzejazdy
                     var place = Autocomplete.GetPlaceFromIntent(data);
                     destinationText.Text = place.Name.ToString();
                     destinationLocationLatLng = place.LatLng;
+                    destinationAddress = place.Name.ToString();
                     mainMap.AnimateCamera(CameraUpdateFactory.NewLatLngZoom(place.LatLng, 15));
                     centerMarker.SetColorFilter(Color.Red);
                     TripLocationsSet();
