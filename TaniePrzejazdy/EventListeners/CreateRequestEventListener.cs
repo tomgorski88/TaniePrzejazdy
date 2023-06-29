@@ -57,5 +57,11 @@ namespace TaniePrzejazdy.EventListeners
             newTripRef.AddValueEventListener(this);
             newTripRef.SetValue(myTrip);
         }
+
+        public void CancelRequest()
+        {
+            newTripRef.RemoveEventListener(this);
+            newTripRef.RemoveValue();
+        }
     }
 }

@@ -154,6 +154,7 @@ namespace TaniePrzejazdy
 
             var trans = SupportFragmentManager.BeginTransaction();
             requestDriverFragment.Show(trans, "Request");
+            requestDriverFragment.CancelRequest += RequestDriverFragment_CancelRequest;
 
             newTripDetails = new NewTripDetails
             {
@@ -174,6 +175,18 @@ namespace TaniePrzejazdy
 
             requestListener = new CreateRequestEventListener(newTripDetails);
             requestListener.CreateRequest();
+        }
+
+        private void RequestDriverFragment_CancelRequest(object sender, EventArgs e)
+        {
+            // User cancels request before driver accepts it
+            if (requestDriverFragment !=null && requestListener != null)
+            {
+                requestListener.CancelRequest();
+                requestListener = null;
+                requestDriverFragment.Dismiss();
+                requestDriverFragment = null;
+            }
         }
 
         private async void LocationSetButton_Click(object sender, EventArgs e)

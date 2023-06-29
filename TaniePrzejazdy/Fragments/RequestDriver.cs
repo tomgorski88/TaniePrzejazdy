@@ -3,12 +3,14 @@ using Android.OS;
 using Android.Views;
 using Android.Widget;
 using AndroidX.Fragment.App;
+using System;
 
 namespace TaniePrzejazdy.Fragments
 {
     public class RequestDriver : DialogFragment
     {
-        private Button cancelRequest;
+        public event EventHandler CancelRequest;
+        private Button cancelRequestButton;
         private TextView faresTxt;
         private double mfares;
 
@@ -23,10 +25,16 @@ namespace TaniePrzejazdy.Fragments
         {
             var view = inflater.Inflate(Resource.Layout.request_driver, container, false);
 
-            cancelRequest = (Button)view.FindViewById(Resource.Id.cancelrequestButton);
+            cancelRequestButton = (Button)view.FindViewById(Resource.Id.cancelrequestButton);
+            cancelRequestButton.Click += CancelRequest_Click;
             faresTxt = (TextView)view.FindViewById(Resource.Id.faresText);
             faresTxt.Text = mfares.ToString() + " PLN";
             return view;
+        }
+
+        private void CancelRequest_Click(object sender, System.EventArgs e)
+        {
+            CancelRequest?.Invoke(this, new EventArgs());
         }
 
         public RequestDriver(double fares)
