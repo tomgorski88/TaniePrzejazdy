@@ -32,6 +32,7 @@ namespace TaniePrzejazdy
     {
         UserProfileEventListener profileEventListener = new UserProfileEventListener();
         CreateRequestEventListener requestListener;
+        FindDriverListener findDriverListener;
 
         private FirebaseDatabase database;
         private AndroidX.AppCompat.Widget.Toolbar mainToolbar;
@@ -54,7 +55,7 @@ namespace TaniePrzejazdy
 
         private BottomSheetBehavior tripDetailsBottomSheetBehavior;
 
-        private readonly string[] permissionGroupLocation = {Manifest.Permission.AccessCoarseLocation, Manifest.Permission.AccessFineLocation};
+        private readonly string[] permissionGroupLocation = { Manifest.Permission.AccessCoarseLocation, Manifest.Permission.AccessFineLocation };
         private const int requestLocationId = 0;
 
         private LocationRequest mLocationRequest;
@@ -93,7 +94,7 @@ namespace TaniePrzejazdy
 
             ConnectControl();
 
-            var mapFragment = (SupportMapFragment) SupportFragmentManager.FindFragmentById(Resource.Id.map).JavaCast<SupportMapFragment>();
+            var mapFragment = (SupportMapFragment)SupportFragmentManager.FindFragmentById(Resource.Id.map).JavaCast<SupportMapFragment>();
             mapFragment.GetMapAsync(this);
 
             CheckLocationPermissions();
@@ -174,13 +175,60 @@ namespace TaniePrzejazdy
             };
 
             requestListener = new CreateRequestEventListener(newTripDetails);
+            requestListener.NoDriverAcceptedRequest += RequestListener_NoDriverAcceptedRequest;
             requestListener.CreateRequest();
+
+            findDriverListener = new FindDriverListener(pickupLocationLatLng, newTripDetails.RideId);
+            findDriverListener.DriversFound += FindDriverListener_DriversFound;
+            findDriverListener.DriverNotFound += FindDriverListener_DriverNotFound;
+            findDriverListener.Create();
+        }
+
+        private void RequestListener_NoDriverAcceptedRequest(object sender, EventArgs e)
+        {
+            RunOnUiThread(() =>
+            {
+                if (requestDriverFragment != null && requestListener != null)
+                {
+                    requestListener.CancelRequestOnTimeout();
+                    requestListener = null;
+                    requestDriverFragment.Dismiss();
+                    requestDriverFragment = null;
+
+                    var alert = new Android.App.AlertDialog.Builder(this);
+                    alert.SetTitle("Message");
+                    alert.SetMessage("Available drivers couldn't accept your ride request. Try again in a moment.");
+                    alert.Show();
+                }
+            });
+        }
+
+        private void FindDriverListener_DriverNotFound(object sender, EventArgs e)
+        {
+            if (requestDriverFragment != null && requestListener != null)
+            {
+                requestListener.CancelRequest();
+                requestListener = null;
+                requestDriverFragment.Dismiss();
+                requestDriverFragment = null;
+
+                var alert = new Android.App.AlertDialog.Builder(this);
+                alert.SetTitle("Message");
+                alert.SetMessage("No available driver found, try again in a few moments");
+                alert.Show();
+            }
+        }
+
+        private void FindDriverListener_DriversFound(object sender, FindDriverListener.DriverFoundEventArgs e)
+        {
+            //notify
+            requestListener?.NotifyDriver(e.Drivers);
         }
 
         private void RequestDriverFragment_CancelRequest(object sender, EventArgs e)
         {
             // User cancels request before driver accepts it
-            if (requestDriverFragment !=null && requestListener != null)
+            if (requestDriverFragment != null && requestListener != null)
             {
                 requestListener.CancelRequest();
                 requestListener = null;
@@ -214,7 +262,7 @@ namespace TaniePrzejazdy
 
         private void FavouritePlacesButton_Click(object sender, EventArgs e)
         {
-            
+
         }
 
         private void PickupRadio_Click(object sender, EventArgs e)
@@ -256,7 +304,7 @@ namespace TaniePrzejazdy
 
             var intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.Overlay, fields).SetCountry("PL").Build(this);
             StartActivityForResult(intent, 2);
-            
+
         }
         #endregion        
 
@@ -345,7 +393,7 @@ namespace TaniePrzejazdy
 
         void StopLocationUpdates()
         {
-            if(locationClient!=null && mLocationCallback != null)
+            if (locationClient != null && mLocationCallback != null)
             {
                 locationClient.RemoveLocationUpdates(mLocationCallback);
             }
@@ -387,21 +435,21 @@ namespace TaniePrzejazdy
         #region OVERRIDE METHODS
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Permission[] grantResults)
         {
-            if(grantResults.Length < 1)
+            if (grantResults.Length < 1)
             {
                 return;
             }
             if (grantResults[0] == (int)Android.Content.PM.Permission.Granted)
             {
                 StartLocationUpdates();
-            }          
+            }
         }
         protected override void OnActivityResult(int requestCode, [GeneratedEnum] Android.App.Result resultCode, Android.Content.Intent data)
         {
             base.OnActivityResult(requestCode, resultCode, data);
-            if(requestCode == 1)
+            if (requestCode == 1)
             {
-                if(resultCode == Android.App.Result.Ok)
+                if (resultCode == Android.App.Result.Ok)
                 {
                     takeAddressFromSearch = true;
                     pickupRadio.Checked = false;

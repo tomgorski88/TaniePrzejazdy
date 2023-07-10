@@ -74,8 +74,10 @@
     <Compile Include="Activities\LoginActivity.cs" />
     <Compile Include="Activities\RegisterActivity.cs" />
     <Compile Include="Activities\SplashActivity.cs" />
+    <Compile Include="DataModel\AvailableDriver.cs" />
     <Compile Include="DataModel\NewTripDetails.cs" />
     <Compile Include="EventListeners\CreateRequestEventListener.cs" />
+    <Compile Include="EventListeners\FindDriverListener.cs" />
     <Compile Include="EventListeners\TaskCompletionListener.cs" />
     <Compile Include="EventListeners\UserProfileEventListener.cs" />
     <Compile Include="Fragments\RequestDriver.cs" />

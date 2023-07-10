@@ -16,8 +16,6 @@ namespace TaniePrzejazdy.EventListeners
 
         public void OnDataChange(DataSnapshot snapshot)
         {
-            var test = snapshot;
-
             if (snapshot.Value != null)
             {
                 var fullName = (snapshot.Child("fullname") != null) ? snapshot.Child("fullname").Value.ToString() : string.Empty;
